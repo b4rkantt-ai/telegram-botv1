@@ -2,7 +2,6 @@
 # ╔══════════════════════════════════════════════════════════╗
 # ║         CYBER SEARCHER v4.0 — FULL PRODUCTION           ║
 # ║              Developer: @hackledin                       ║
-# ║   🎵 MP3 Müzik + 📸 EXIF + 📧 Hotmail + 💣 SMS + 🌍 OSINT ║
 # ╚══════════════════════════════════════════════════════════╝
 
 import telebot
@@ -62,8 +61,6 @@ PREMIUM_CAPTURE_LIMIT = 999
 FREE_KEYWORD_LIMIT = 3
 PREMIUM_KEYWORD_LIMIT = 999
 
-SMS_COUNT = 41
-
 # ══════════════════════════════════════════════════════════════
 #  DATABASE FUNCTIONS
 # ══════════════════════════════════════════════════════════════
@@ -119,6 +116,7 @@ def db_init():
 
 db_init()
 
+
 def db_get(user_id, col):
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -130,6 +128,7 @@ def db_get(user_id, col):
     except:
         return None
 
+
 def db_set(user_id, col, val):
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -139,6 +138,7 @@ def db_set(user_id, col, val):
         conn.close()
     except:
         pass
+
 
 def add_user(user_id, username="", first_name=""):
     try:
@@ -151,11 +151,13 @@ def add_user(user_id, username="", first_name=""):
     except:
         pass
 
+
 def is_premium(user_id):
     try:
         return db_get(user_id, "is_premium") == 1
     except:
         return False
+
 
 def is_premium_osint(user_id):
     try:
@@ -163,11 +165,13 @@ def is_premium_osint(user_id):
     except:
         return False
 
+
 def is_banned(user_id):
     try:
         return db_get(user_id, "is_banned") == 1
     except:
         return False
+
 
 def get_ban_reason(user_id):
     try:
@@ -175,6 +179,7 @@ def get_ban_reason(user_id):
         return reason or "Belirtilmemiş"
     except:
         return "Belirtilmemiş"
+
 
 def set_premium(user_id, username=""):
     try:
@@ -192,6 +197,7 @@ def set_premium(user_id, username=""):
         print(f"[PREMIUM ERROR] set_premium: {e}")
         return False
 
+
 def set_premium_osint(user_id, username=""):
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -208,13 +214,16 @@ def set_premium_osint(user_id, username=""):
         print(f"[PREMIUM ERROR] set_premium_osint: {e}")
         return False
 
+
 def remove_premium(user_id):
     db_set(user_id, "is_premium", 0)
     db_set(user_id, "premium_date", "")
 
+
 def remove_premium_osint(user_id):
     db_set(user_id, "is_premium_osint", 0)
     db_set(user_id, "premium_osint_date", "")
+
 
 def get_user_stats(user_id):
     try:
@@ -227,6 +236,7 @@ def get_user_stats(user_id):
     except:
         return None
 
+
 def get_user_name(user_id):
     name = db_get(user_id, "first_name")
     if name:
@@ -235,6 +245,7 @@ def get_user_name(user_id):
     if username:
         return f"@{username}"
     return str(user_id)
+
 
 def get_user_keywords(user_id):
     try:
@@ -245,8 +256,10 @@ def get_user_keywords(user_id):
     except:
         return ["tiktok", "instagram", "netflix"]
 
+
 def set_user_keywords(user_id, keywords_list):
     db_set(user_id, "keywords", ','.join(keywords_list))
+
 
 def can_add_keyword(user_id):
     keywords = get_user_keywords(user_id)
@@ -254,10 +267,12 @@ def can_add_keyword(user_id):
         return len(keywords) < PREMIUM_KEYWORD_LIMIT
     return len(keywords) < FREE_KEYWORD_LIMIT
 
+
 def get_keyword_limit_text(user_id):
     if is_premium(user_id):
         return f"♾️ Sınırsız"
     return f"{FREE_KEYWORD_LIMIT}"
+
 
 def get_capture_used(user_id):
     try:
@@ -265,19 +280,23 @@ def get_capture_used(user_id):
     except:
         return 0
 
+
 def increment_capture_used(user_id):
     current = get_capture_used(user_id)
     db_set(user_id, "capture_used", current + 1)
+
 
 def can_use_capture(user_id):
     if is_premium(user_id):
         return True
     return get_capture_used(user_id) < FREE_CAPTURE_LIMIT
 
+
 def get_capture_limit_text(user_id):
     if is_premium(user_id):
         return f"♾️ Sınırsız"
     return f"{FREE_CAPTURE_LIMIT - get_capture_used(user_id)}"
+
 
 def get_daily_usage(user_id):
     today = datetime.now().strftime("%Y-%m-%d")
@@ -293,18 +312,20 @@ def get_daily_usage(user_id):
     except:
         return {"checks": 0, "hits": 0}
 
+
 def update_daily_usage(user_id, checks=0, hits=0):
     today = datetime.now().strftime("%Y-%m-%d")
     try:
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute("INSERT INTO daily_usage (user_id, date, checks, hits) VALUES (?, ?, ?, ?) "
-                  "ON CONFLICT(user_id, date) DO UPDATE SET checks=checks+?, hits=hits+?", 
+                  "ON CONFLICT(user_id, date) DO UPDATE SET checks=checks+?, hits=hits+?",
                   (user_id, today, checks, hits, checks, hits))
         conn.commit()
         conn.close()
     except:
         pass
+
 
 def save_hotmail_log(user_id, username, email, password, status, detail=""):
     try:
@@ -318,6 +339,7 @@ def save_hotmail_log(user_id, username, email, password, status, detail=""):
     except:
         pass
 
+
 def get_hotmail_logs(limit=50):
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -328,6 +350,7 @@ def get_hotmail_logs(limit=50):
         return r
     except:
         return []
+
 
 def get_bot_stats():
     try:
@@ -340,6 +363,7 @@ def get_bot_stats():
     except:
         return (0, 0, 0, 0, 0)
 
+
 def get_all_users():
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -350,6 +374,7 @@ def get_all_users():
         return r
     except:
         return []
+
 
 def find_user_by_username(username):
     try:
@@ -362,6 +387,7 @@ def find_user_by_username(username):
     except:
         return None
 
+
 def get_premium_logs(limit=20):
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -373,6 +399,7 @@ def get_premium_logs(limit=20):
     except:
         return []
 
+
 def update_stats(user_id, combos):
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -383,13 +410,16 @@ def update_stats(user_id, combos):
     except:
         pass
 
+
 def ban_user(user_id, reason="Kural ihlali"):
     db_set(user_id, "is_banned", 1)
     db_set(user_id, "ban_reason", reason)
 
+
 def unban_user(user_id):
     db_set(user_id, "is_banned", 0)
     db_set(user_id, "ban_reason", "")
+
 
 def get_banned_users():
     try:
@@ -402,12 +432,14 @@ def get_banned_users():
     except:
         return []
 
+
 def api_pref(user_id):
     try:
         v = db_get(user_id, "api_pref")
         return v if v is not None else 0
     except:
         return 0
+
 
 # ══════════════════════════════════════════════════════════════
 #  LANGUAGE HELPERS
@@ -418,15 +450,17 @@ def lang(user_id):
     return l if l in ("tr", "en", "ar") else "tr"
 
 
-# ══════════════════════════════════════════════════════════════
-#  📖 YARDIM MENÜSÜ — FONKSİYON (HATA DÜZELTİLDİ)
-# ══════════════════════════════════════════════════════════════
+def s(user_id, key, **kw):
+    l = lang(user_id)
+    txt = S.get(l, S["tr"]).get(key, key)
+    return txt.format(**kw) if kw else txt
+
 
 def get_help_content(uid):
     """Yardım menüsü içeriğini kullanıcıya özel oluşturur."""
     l = lang(uid)
     status = "⭐ PREMIUM" if is_premium(uid) else "🆓 Ücretsiz"
-    
+
     if l == "tr":
         return (
             "📖 **YARDIM MENÜSÜ**\n"
@@ -452,7 +486,7 @@ def get_help_content(uid):
             "🔹 **DİĞER ARAÇLAR** (🆓 ÜCRETSİZ):\n"
             "   • 📦 Combo Çekme\n"
             "   • 🎥 Video İndirme\n"
-            "   • 🎵 Müzik İndirme\n"
+            "   • 🎵 Müzik İndirme (MP3)\n"
             "   • 💳 CC Generator\n"
             "   • 🤖 Discord Token Kontrol\n"
             "   • ✈️ Telegram Token Kontrol\n"
@@ -475,7 +509,7 @@ def get_help_content(uid):
             "   • ⚙️ API Değiştir\n\n"
             "👨‍💻 coded by: @hackledin"
         )
-    
+
     elif l == "en":
         return (
             "📖 **HELP MENU**\n"
@@ -493,7 +527,7 @@ def get_help_content(uid):
             "   • 🌍 LeakSights OSINT - Premium (200⭐)\n\n"
             "👨‍💻 coded by: @hackledin"
         )
-    
+
     else:  # ar
         return (
             "📖 **قائمة المساعدة**\n"
@@ -506,14 +540,8 @@ def get_help_content(uid):
         )
 
 
-def s(user_id, key, **kw):
-    l = lang(user_id)
-    txt = S.get(l, S["tr"]).get(key, key)
-    return txt.format(**kw) if kw else txt
-
-
 # ══════════════════════════════════════════════════════════════
-#  STRINGS (help_content ARTIK YOK — fonksiyon olarak)
+#  STRINGS
 # ══════════════════════════════════════════════════════════════
 
 S = {
@@ -605,8 +633,9 @@ S = {
     },
 }
 
+
 # ══════════════════════════════════════════════════════════════
-#  📸 EXIF METADATA MODÜLÜ
+#  EXIF METADATA MODÜLÜ
 # ══════════════════════════════════════════════════════════════
 
 def _exif_koordinat_cevir(deger, ref):
@@ -815,7 +844,7 @@ def _exif_mesaj_olustur(d: dict) -> str:
 
 
 # ══════════════════════════════════════════════════════════════
-#  🎵 MÜZİK İNDİRİCİ MODÜLÜ (MP3)
+#  MÜZİK İNDİRİCİ MODÜLÜ (MP3)
 # ══════════════════════════════════════════════════════════════
 
 def _youtube_ara(sorgu: str) -> Optional[str]:
@@ -3331,7 +3360,8 @@ def hotmail_worker(combo_line, user_id, user_name, is_premium, keywords):
                 print(f"🤖 CAPTCHA | {user_name} | {email}")
 
             elif status == "locked":
-                HOTMAIL_ERROR += 1                save_hotmail_log(user_id, user_name, email, password, "LOCKED", result.get("detail", ""))
+                HOTMAIL_ERROR += 1
+                save_hotmail_log(user_id, user_name, email, password, "LOCKED", result.get("detail", ""))
                 print(f"🔒 LOCKED | {user_name} | {email}")
 
             elif status == "bad":
