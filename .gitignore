@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+cyber_searcher.db
+bot_registry.json
+*.log
+.env
