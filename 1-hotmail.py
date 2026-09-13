@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # ╔══════════════════════════════════════════════════════════╗
-# ║         CYBER SEARCHER v4.1 — FULL PRODUCTION           ║
+# ║         CYBER SEARCHER v4.2 — FULL PRODUCTION           ║
 # ║              Developer: @hackledin                       ║
-# ║   🎵 Müzik + 🎥 Video (Sağlam) + 📸 EXIF + 🇹🇷 Adres     ║
+# ║  🎵 Müzik + 🎥 Video (POT ile Bot Koruması Aşıldı)      ║
 # ╚══════════════════════════════════════════════════════════╝
 
 import telebot
@@ -63,6 +63,31 @@ FREE_KEYWORD_LIMIT = 3
 PREMIUM_KEYWORD_LIMIT = 999
 
 SMS_COUNT = 41
+
+# ══════════════════════════════════════════════════════════════
+#  YT-DLP POT (Proof-of-Origin Token) PROVIDER AYARI
+# ══════════════════════════════════════════════════════════════
+
+# Dockerfile'da çalışan POT sunucusu adresi
+POT_PROVIDER_URL = "http://127.0.0.1:4416"
+
+def _ytdlp_common_opts():
+    """Tüm yt-dlp çağrılarında kullanılacak ortak ayarlar."""
+    return {
+        'noplaylist': True,
+        'quiet': True,
+        'no_warnings': True,
+        'socket_timeout': 30,
+        'retries': 3,
+        'fragment_retries': 3,
+        'ignoreerrors': False,
+        # POT sağlayıcı ayarları (bot kontrolünü aşar)
+        'extractor_args': {
+            'youtubepot-bgutilhttp': {
+                'base_url': [POT_PROVIDER_URL]
+            }
+        },
+    }
 
 # ══════════════════════════════════════════════════════════════
 #  DATABASE FUNCTIONS
@@ -614,12 +639,12 @@ def _exif_mesaj_olustur(d: dict) -> str:
     else:
         msg += f"📍 <b>GPS:</b> <code>Konum verisi bulunamadı</code>\n\n"
 
-    msg += f"{'━' * 28}\n🤖 <i>Cyber Searcher v4.1 | @hackledin</i>"
+    msg += f"{'━' * 28}\n🤖 <i>Cyber Searcher v4.2 | @hackledin</i>"
     return msg
 
 
 # ══════════════════════════════════════════════════════════════
-#  🎵 MÜZİK İNDİRİCİ MODÜLÜ (SAĞLAM / KESİN ÇÖZÜM)
+#  🎵 MÜZİK İNDİRİCİ (POT PROVIDER İLE BOT KORUMASI AŞILIR)
 # ══════════════════════════════════════════════════════════════
 
 MUSIC_LOCK = threading.Lock()
@@ -631,7 +656,7 @@ def _youtube_ara(sorgu: str) -> Optional[str]:
         q = quote(sorgu)
         html = requests.get(
             f"https://www.youtube.com/results?search_query={q}",
-            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"},
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"},
             timeout=15,
             verify=False
         ).text
@@ -682,17 +707,11 @@ def _muzik_indir(sorgu: str) -> dict:
 
     for opts in formats:
         try:
-            ydl_opts = {
+            ydl_opts = _ytdlp_common_opts()
+            ydl_opts.update({
                 'outtmpl': 'muzikler/%(id)s.%(ext)s',
-                'noplaylist': True,
-                'quiet': True,
-                'no_warnings': True,
                 'max_filesize': 50 * 1024 * 1024,
-                'socket_timeout': 30,
-                'retries': 3,
-                'fragment_retries': 3,
-                'ignoreerrors': False,
-            }
+            })
             ydl_opts.update(opts)
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -855,24 +874,19 @@ def _process_music(msg, bot_instance):
 
 
 # ══════════════════════════════════════════════════════════════
-#  🎥 VİDEO İNDİRİCİ (SAĞLAM)
+#  🎥 VİDEO İNDİRİCİ (POT PROVIDER İLE)
 # ══════════════════════════════════════════════════════════════
 
 def _download_video(link):
     os.makedirs("downloads", exist_ok=True)
-    out_template = os.path.join("downloads", "%(id)s.%(ext)s")
-    opts = {
+    ydl_opts = _ytdlp_common_opts()
+    ydl_opts.update({
         "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
-        "outtmpl": out_template,
-        "noplaylist": True,
-        "quiet": True,
-        "no_warnings": True,
+        "outtmpl": os.path.join("downloads", "%(id)s.%(ext)s"),
         "max_filesize": 50 * 1024 * 1024,
-        "socket_timeout": 30,
-        "retries": 3,
-    }
+    })
     try:
-        with YoutubeDL(opts) as ydl:
+        with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(link, download=True)
             if "requested_downloads" in info and info["requested_downloads"]:
                 path = info["requested_downloads"][0]["filepath"]
@@ -1249,7 +1263,7 @@ def s(user_id, key, **kw):
 
 
 # ══════════════════════════════════════════════════════════════
-#  STRINGS  (⚠️ BURADA f-STRING KULLANILMAMALI!)
+#  STRINGS (f-string KULLANILMAMALI!)
 # ══════════════════════════════════════════════════════════════
 
 S = {
@@ -1391,8 +1405,8 @@ S = {
             "   • 📧 Hotmail Checker - Free 3000 lines\n"
             "   • 📸 Capture Tool - Free 3 uses\n"
             "   • 📸 EXIF Metadata Analysis ✅\n"
-            "   • 🎵 Music Downloader (Fixed ✅)\n"
-            "   • 🎥 Video Downloader (Fixed ✅)\n"
+            "   • 🎵 Music Downloader (POT ✅)\n"
+            "   • 🎥 Video Downloader (POT ✅)\n"
             "   • 🌍 LeakSights OSINT - Premium (200⭐)\n\n"
             "👨‍💻 coded by: @hackledin"
         ),
@@ -5793,21 +5807,18 @@ if __name__ == "__main__":
 
     print("""
 ╔══════════════════════════════════════════════════════╗
-║       CYBER SEARCHER v4.1 — PRODUCTION               ║
+║       CYBER SEARCHER v4.2 — PRODUCTION               ║
 ║         Developer: @hackledin                        ║
 ╠══════════════════════════════════════════════════════╣
-║  ✅ Premium (400 Yıldız) - Sınırsız                  ║
-║  ✅ OSINT Premium (200 Yıldız) - 30+ Sorgu           ║
+║  ✅ YouTube POT Provider (Bot Koruması Aşıldı)      ║
+║  ✅ Müzik İndirici (Cookies'siz Çalışır)            ║
+║  ✅ Video İndirici (Cookies'siz Çalışır)            ║
+║  ✅ Adres Sorgu (Tapu & Adres)                      ║
+║  ✅ Hotmail Checker v4.0                             ║
+║  ✅ Capture Tool                                     ║
 ║  ✅ SMS Bomber (41+ Servis)                          ║
-║  ✅ Hotmail Checker (Free 3000 / Premium Sınırsız)   ║
-║  ✅ Hotmail v4.0 (OAuth2, Proxy, 2FA, Captcha)       ║
-║  ✅ Capture Tool (Free 3 / Premium Sınırsız)         ║
-║  ✅ EXIF Metadata Analizi                            ║
-║  ✅ Müzik İndirici (SAĞLAM ✅)                       ║
-║  ✅ Video İndirici (SAĞLAM ✅)                       ║
-║  ✅ Adres Sorgu (YENİ! ✅)                           ║
-║  ✅ Türkçe / English / العربية                        ║
-║  ✅ Auto-restart on crash                            ║
+║  ✅ EXIF Metadata                                    ║
+║  ✅ Türkçe / English / العربية                       ║
 ╚══════════════════════════════════════════════════════╝
     """)
 
