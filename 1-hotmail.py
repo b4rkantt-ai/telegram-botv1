@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # ╔══════════════════════════════════════════════════════════╗
-# ║         CYBER SEARCHER v4.0 — FULL PRODUCTION           ║
+# ║         CYBER SEARCHER v4.1 — FULL PRODUCTION           ║
 # ║              Developer: @hackledin                       ║
+# ║   🎵 Müzik + 🎥 Video (Sağlam) + 📸 EXIF + 🇹🇷 Adres     ║
 # ╚══════════════════════════════════════════════════════════╝
 
 import telebot
@@ -61,6 +62,8 @@ PREMIUM_CAPTURE_LIMIT = 999
 FREE_KEYWORD_LIMIT = 3
 PREMIUM_KEYWORD_LIMIT = 999
 
+SMS_COUNT = 41
+
 # ══════════════════════════════════════════════════════════════
 #  DATABASE FUNCTIONS
 # ══════════════════════════════════════════════════════════════
@@ -116,7 +119,6 @@ def db_init():
 
 db_init()
 
-
 def db_get(user_id, col):
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -128,7 +130,6 @@ def db_get(user_id, col):
     except:
         return None
 
-
 def db_set(user_id, col, val):
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -138,7 +139,6 @@ def db_set(user_id, col, val):
         conn.close()
     except:
         pass
-
 
 def add_user(user_id, username="", first_name=""):
     try:
@@ -151,13 +151,11 @@ def add_user(user_id, username="", first_name=""):
     except:
         pass
 
-
 def is_premium(user_id):
     try:
         return db_get(user_id, "is_premium") == 1
     except:
         return False
-
 
 def is_premium_osint(user_id):
     try:
@@ -165,13 +163,11 @@ def is_premium_osint(user_id):
     except:
         return False
 
-
 def is_banned(user_id):
     try:
         return db_get(user_id, "is_banned") == 1
     except:
         return False
-
 
 def get_ban_reason(user_id):
     try:
@@ -179,7 +175,6 @@ def get_ban_reason(user_id):
         return reason or "Belirtilmemiş"
     except:
         return "Belirtilmemiş"
-
 
 def set_premium(user_id, username=""):
     try:
@@ -197,7 +192,6 @@ def set_premium(user_id, username=""):
         print(f"[PREMIUM ERROR] set_premium: {e}")
         return False
 
-
 def set_premium_osint(user_id, username=""):
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -214,16 +208,13 @@ def set_premium_osint(user_id, username=""):
         print(f"[PREMIUM ERROR] set_premium_osint: {e}")
         return False
 
-
 def remove_premium(user_id):
     db_set(user_id, "is_premium", 0)
     db_set(user_id, "premium_date", "")
 
-
 def remove_premium_osint(user_id):
     db_set(user_id, "is_premium_osint", 0)
     db_set(user_id, "premium_osint_date", "")
-
 
 def get_user_stats(user_id):
     try:
@@ -236,7 +227,6 @@ def get_user_stats(user_id):
     except:
         return None
 
-
 def get_user_name(user_id):
     name = db_get(user_id, "first_name")
     if name:
@@ -245,7 +235,6 @@ def get_user_name(user_id):
     if username:
         return f"@{username}"
     return str(user_id)
-
 
 def get_user_keywords(user_id):
     try:
@@ -256,10 +245,8 @@ def get_user_keywords(user_id):
     except:
         return ["tiktok", "instagram", "netflix"]
 
-
 def set_user_keywords(user_id, keywords_list):
     db_set(user_id, "keywords", ','.join(keywords_list))
-
 
 def can_add_keyword(user_id):
     keywords = get_user_keywords(user_id)
@@ -267,12 +254,10 @@ def can_add_keyword(user_id):
         return len(keywords) < PREMIUM_KEYWORD_LIMIT
     return len(keywords) < FREE_KEYWORD_LIMIT
 
-
 def get_keyword_limit_text(user_id):
     if is_premium(user_id):
         return f"♾️ Sınırsız"
     return f"{FREE_KEYWORD_LIMIT}"
-
 
 def get_capture_used(user_id):
     try:
@@ -280,23 +265,19 @@ def get_capture_used(user_id):
     except:
         return 0
 
-
 def increment_capture_used(user_id):
     current = get_capture_used(user_id)
     db_set(user_id, "capture_used", current + 1)
-
 
 def can_use_capture(user_id):
     if is_premium(user_id):
         return True
     return get_capture_used(user_id) < FREE_CAPTURE_LIMIT
 
-
 def get_capture_limit_text(user_id):
     if is_premium(user_id):
         return f"♾️ Sınırsız"
     return f"{FREE_CAPTURE_LIMIT - get_capture_used(user_id)}"
-
 
 def get_daily_usage(user_id):
     today = datetime.now().strftime("%Y-%m-%d")
@@ -312,20 +293,18 @@ def get_daily_usage(user_id):
     except:
         return {"checks": 0, "hits": 0}
 
-
 def update_daily_usage(user_id, checks=0, hits=0):
     today = datetime.now().strftime("%Y-%m-%d")
     try:
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
         c.execute("INSERT INTO daily_usage (user_id, date, checks, hits) VALUES (?, ?, ?, ?) "
-                  "ON CONFLICT(user_id, date) DO UPDATE SET checks=checks+?, hits=hits+?",
+                  "ON CONFLICT(user_id, date) DO UPDATE SET checks=checks+?, hits=hits+?", 
                   (user_id, today, checks, hits, checks, hits))
         conn.commit()
         conn.close()
     except:
         pass
-
 
 def save_hotmail_log(user_id, username, email, password, status, detail=""):
     try:
@@ -339,7 +318,6 @@ def save_hotmail_log(user_id, username, email, password, status, detail=""):
     except:
         pass
 
-
 def get_hotmail_logs(limit=50):
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -350,7 +328,6 @@ def get_hotmail_logs(limit=50):
         return r
     except:
         return []
-
 
 def get_bot_stats():
     try:
@@ -363,7 +340,6 @@ def get_bot_stats():
     except:
         return (0, 0, 0, 0, 0)
 
-
 def get_all_users():
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -374,7 +350,6 @@ def get_all_users():
         return r
     except:
         return []
-
 
 def find_user_by_username(username):
     try:
@@ -387,7 +362,6 @@ def find_user_by_username(username):
     except:
         return None
 
-
 def get_premium_logs(limit=20):
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -399,7 +373,6 @@ def get_premium_logs(limit=20):
     except:
         return []
 
-
 def update_stats(user_id, combos):
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -410,16 +383,13 @@ def update_stats(user_id, combos):
     except:
         pass
 
-
 def ban_user(user_id, reason="Kural ihlali"):
     db_set(user_id, "is_banned", 1)
     db_set(user_id, "ban_reason", reason)
 
-
 def unban_user(user_id):
     db_set(user_id, "is_banned", 0)
     db_set(user_id, "ban_reason", "")
-
 
 def get_banned_users():
     try:
@@ -432,7 +402,6 @@ def get_banned_users():
     except:
         return []
 
-
 def api_pref(user_id):
     try:
         v = db_get(user_id, "api_pref")
@@ -440,202 +409,8 @@ def api_pref(user_id):
     except:
         return 0
 
-
 # ══════════════════════════════════════════════════════════════
-#  LANGUAGE HELPERS
-# ══════════════════════════════════════════════════════════════
-
-def lang(user_id):
-    l = db_get(user_id, "language")
-    return l if l in ("tr", "en", "ar") else "tr"
-
-
-def s(user_id, key, **kw):
-    l = lang(user_id)
-    txt = S.get(l, S["tr"]).get(key, key)
-    return txt.format(**kw) if kw else txt
-
-
-def get_help_content(uid):
-    """Yardım menüsü içeriğini kullanıcıya özel oluşturur."""
-    l = lang(uid)
-    status = "⭐ PREMIUM" if is_premium(uid) else "🆓 Ücretsiz"
-
-    if l == "tr":
-        return (
-            "📖 **YARDIM MENÜSÜ**\n"
-            f"📌 Durumunuz: {status}\n"
-            "══════════════════════\n\n"
-            "🔹 **SORGU SİSTEMLERİ** (🆓 ÜCRETSİZ):\n"
-            "   • 🆔 TC Sorgu\n"
-            "   • 🔍 TC Pro Sorgu\n"
-            "   • 👤 Ad Soyad Sorgu\n"
-            "   • 👨‍👩‍👧 Aile Sorgu\n"
-            "   • 👨‍👩‍👧‍👦 Aile Pro Sorgu\n"
-            "   • 🌳 Sülale Sorgu\n"
-            "   • 📱 TC'den GSM\n"
-            "   • 📞 GSM'den TC\n"
-            "   • 🚗 Plaka Sorgu\n"
-            "   • 🎓 E-Okul Sorgu\n"
-            "   • 🏠 Tapu Sorgu\n"
-            "   • 🗺️ Ada Parsel Sorgu\n\n"
-            "🔹 **⭐ PREMIUM PAKETLER:**\n"
-            "   • 🌟 Premium (400 Yıldız) → Sınırsız Hotmail + Capture + Keyword\n"
-            "   • 🌍 OSINT Premium (200 Yıldız) → LeakSights OSINT (30+ Sorgu)\n"
-            "   • /premium ile satın alabilirsin\n\n"
-            "🔹 **DİĞER ARAÇLAR** (🆓 ÜCRETSİZ):\n"
-            "   • 📦 Combo Çekme\n"
-            "   • 🎥 Video İndirme\n"
-            "   • 🎵 Müzik İndirme (MP3)\n"
-            "   • 💳 CC Generator\n"
-            "   • 🤖 Discord Token Kontrol\n"
-            "   • ✈️ Telegram Token Kontrol\n"
-            "   • 🌐 IP Bilgi\n"
-            "   • 🔎 DNS Sorgu\n"
-            "   • ⚽ Bahis Sorgu\n"
-            "   • 💊 Eczane Sorgu\n"
-            "   • 🛡️ Proxy Check\n"
-            "   • 🔍 URL Scan\n"
-            "   • 🐍 PHP→Python Çevirici\n"
-            "   • 💣 SMS Bomber - 41+ Servis ✅\n"
-            "   • 📧 Hotmail Checker - Free 3000 satır\n"
-            "   • 📸 Capture Tool - Free 3 kullanım\n"
-            "   • 📸 EXIF Metadata Analizi ✅\n"
-            "   • 🌍 LeakSights OSINT - Premium (200⭐)\n\n"
-            "🔹 **PROFİL:**\n"
-            "   • 👤 Profil\n"
-            "   • 📊 İstatistik\n"
-            "   • 🏆 Lider Tablosu\n"
-            "   • ⚙️ API Değiştir\n\n"
-            "👨‍💻 coded by: @hackledin"
-        )
-
-    elif l == "en":
-        return (
-            "📖 **HELP MENU**\n"
-            f"📌 Your Status: {status}\n"
-            "══════════════════════\n\n"
-            "🔹 **⭐ PREMIUM PACKAGES:**\n"
-            "   • 🌟 Premium (400 Stars) → Unlimited Hotmail + Capture + Keyword\n"
-            "   • 🌍 OSINT Premium (200 Stars) → LeakSights OSINT (30+ Queries)\n\n"
-            "🔹 **OTHER TOOLS:**\n"
-            "   • 💣 SMS Bomber - 41+ Services ✅\n"
-            "   • 📧 Hotmail Checker - Free 3000 lines\n"
-            "   • 📸 Capture Tool - Free 3 uses\n"
-            "   • 📸 EXIF Metadata Analysis ✅\n"
-            "   • 🎵 Music Downloader (MP3)\n"
-            "   • 🌍 LeakSights OSINT - Premium (200⭐)\n\n"
-            "👨‍💻 coded by: @hackledin"
-        )
-
-    else:  # ar
-        return (
-            "📖 **قائمة المساعدة**\n"
-            f"📌 حالتك: {status}\n"
-            "══════════════════════\n\n"
-            "🔹 **⭐ باقات البريميوم:**\n"
-            "   • 🌟 بريميوم (400 نجمة) → غير محدود Hotmail + Capture + Keyword\n"
-            "   • 🌍 OSINT بريميوم (200 نجمة) → LeakSights OSINT (30+ استعلام)\n\n"
-            "👨‍💻 coded by: @hackledin"
-        )
-
-
-# ══════════════════════════════════════════════════════════════
-#  STRINGS
-# ══════════════════════════════════════════════════════════════
-
-S = {
-    "tr": {
-        "welcome": "🌟 <b>Cyber Searcher</b>\n\nHoşgeldin, <b>{name}</b>!\n📌 Durum: {status}\n\n🔻 Aşağıdan işlem seç:",
-        "free": "🆓 Ücretsiz",
-        "premium": "⭐ PREMIUM",
-        "select_op": "🛠 Kullanmak istediğin aracı seç:",
-        "combo_ask": "🌐 Domain gir (Örn: netflix.com) veya (netflix.com 100):",
-        "searching": "🔍 <b>{domain}</b> taranıyor...",
-        "no_result": "❌ {domain} için sonuç bulunamadı.",
-        "combo_caption": "✅ <b>{domain}</b> | <b>{count}</b> Hesap\nAPI: {apis}",
-        "stats_title": "📊 <b>İSTATİSTİKLERİN</b>",
-        "profile_title": "👤 <b>PROFİL</b>",
-        "lb_title": "🏆 <b>LİDER TABLOSU</b>",
-        "help_title": "📖 <b>YARDIM MENÜSÜ</b>",
-        "no_stats": "📊 Henüz hiç sorgu yapmadınız!",
-        "api_title": "⚙️ <b>API DEĞİŞTİR</b>\n\n📌 Mevcut: <b>{cur}</b>\n\nBir API seç:",
-        "api_set": "✅ API → <b>{api}</b>",
-        "lang_pick": "🌍 Dil seçin / Select language / اختر لغتك",
-        "lang_ok": "✅ Dil seçildi!",
-        "premium_title": "⭐ <b>PREMIUM ÜYELİK</b>",
-        "premium_price_txt": "💰 Fiyat: <b>{price} Telegram Yıldızı</b>",
-        "premium_dur": "♾️ Süre: <b>Sınırsız (Ömür Boyu)</b>",
-        "premium_features": "🎯 <b>PREMIUM ÖZELLİKLER</b>\n   • 📧 Sınırsız Hotmail Check\n   • 📸 Sınırsız Capture (20 Platform)\n   • 🔖 Sınırsız Keyword\n   • 🌍 Sınırsız OSINT (LeakSights)\n   • 📊 Detaylı istatistikler",
-        "osint_price": "💰 OSINT Premium: 200 Yıldız",
-        "already_premium": "⭐ Zaten Premium üyesiniz!",
-        "prem_ok": "🎉 <b>Premium aktif!</b>",
-        "buy_premium_btn": "⭐ Premium Satın Al (400⭐)",
-        "buy_osint_btn": "🌍 OSINT Premium Satın Al (200⭐)",
-        "back_btn": "◀️ Geri",
-        "home_btn": "🏠 Ana Menü",
-        "tools_btn": "🛠 Araçlar",
-        "premium_req": "🔒 Premium gerekli!",
-        "video_ask": "🎥 Video linkini gönder:",
-        "video_wait": "⏳ İndiriliyor...",
-        "video_err": "❌ İndirilemedi:\n<code>{err}</code>",
-        "video_caption": "🎥 <b>{title}</b>\n📦 {size}  ⏱ {dur}s  👤 {upl}",
-        "invalid_link": "❌ Geçerli bir link gir!",
-        "ls_ask": "{icon} <b>LeakSights — {tool}</b>\n\n📥 Sorgu değerini gir:",
-        "ls_caption": "📋 LeakSights ⭐\n🔍 Aranan: <code>{val}</code>\n📅 {date}",
-        "tr_ask": "{prompt}\n\n📌 Sonuç TXT olarak gelir.",
-        "tr_caption": "📋 {tool} Sorgu\n🔍 Param: <code>{param}</code>\n📅 {date}",
-        "processing": "🔄 Sorgulanıyor...",
-        "admin_only": "❌ Bu komut sadece admin içindir!",
-        "no_data": "❌ Veri alınamadı.",
-        "given_ok": "✅ Premium verildi: @{user}",
-        "removed_ok": "✅ Premium kaldırıldı: @{user}",
-        "user_nf": "❌ Kullanıcı bulunamadı!",
-        "enter_val": "Değeri gir:",
-        "invalid_tc": "❌ Geçersiz TC (11 haneli sayı olmalı)!",
-        "invalid_gsm": "❌ Geçersiz GSM (10 haneli)!",
-        "invalid_adsoyad": "❌ Ad ve Soyad gir!",
-        "invalid_adaparsel": "❌ İl,İlçe formatında gir!",
-        "multi_bot_list": "🤖 <b>BOT LİSTESİ</b>",
-        "multi_bot_running": "🟢 Çalışıyor",
-        "multi_bot_stopped": "🔴 Durduruldu",
-        "multi_bot_total": "📊 Toplam: {count} bot",
-        "multi_bot_added": "✅ Bot başlatıldı!\n\n🔑 Token: `{token}`\n👤 Sahip: {owner}\n📌 Durum: 🟢 Çalışıyor",
-        "multi_bot_removed": "✅ Bot durduruldu!\n\n🔑 Token: `{token}`",
-        "multi_bot_not_found": "❌ Token `{token}` bulunamadı!",
-        "multi_bot_exists": "⚠️ Bu token zaten çalışıyor!",
-        "multi_bot_no_bots": "📭 Hiç bot kaydı bulunamadı.",
-        "multi_bot_add_usage": "❌ Kullanım: /addbot BOT_TOKEN\n\nÖrnek: /addbot 8369544888:ABC123...",
-        "addbot_tool": "🤖 Bot Ekle",
-        "announce_title": "📢 <b>ADMIN DUYURU</b>",
-        "announce_sent": "✅ Duyuru gönderildi!",
-        "announce_usage": "❌ Kullanım: /duyuru MESAJ",
-        "announce_no_users": "❌ Gönderilecek kullanıcı bulunamadı.",
-        "announce_failed": "❌ Duyuru gönderilirken hata oluştu.",
-        "php2py": "🐍 PHP'den Python'a Çevirici\n\nBana bir PHP dosyası gönder, Python'a çevireyim.",
-        "php2py_converting": "🔄 Çeviriliyor...",
-        "php2py_done": "✅ Tamamlandı!",
-        "php2py_error": "❌ Çeviri sırasında hata oluştu:\n{err}",
-        "php2py_only": "❌ Sadece PHP dosyası gönder!",
-        "php2py_no_token": "❌ API token alınamadı.",
-    },
-    "en": {
-        "welcome": "🌟 <b>Cyber Searcher</b>\n\nWelcome, <b>{name}</b>!\n📌 Status: {status}\n\n🔻 Select an option:",
-        "free": "🆓 Free",
-        "premium": "⭐ PREMIUM",
-        "osint_price": "💰 OSINT Premium: 200 Stars",
-    },
-    "ar": {
-        "welcome": "🌟 <b>Cyber Searcher</b>\n\nمرحباً، <b>{name}</b>!\n📌 الحالة: {status}\n\n🔻 اختر خياراً:",
-        "free": "🆓 مجاني",
-        "premium": "⭐ بريميوم",
-        "osint_price": "💰 OSINT بريميوم: 200 نجمة",
-    },
-}
-
-
-# ══════════════════════════════════════════════════════════════
-#  EXIF METADATA MODÜLÜ
+#  📸 EXIF METADATA MODÜLÜ
 # ══════════════════════════════════════════════════════════════
 
 def _exif_koordinat_cevir(deger, ref):
@@ -839,20 +614,24 @@ def _exif_mesaj_olustur(d: dict) -> str:
     else:
         msg += f"📍 <b>GPS:</b> <code>Konum verisi bulunamadı</code>\n\n"
 
-    msg += f"{'━' * 28}\n🤖 <i>Cyber Searcher v4.0 | @hackledin</i>"
+    msg += f"{'━' * 28}\n🤖 <i>Cyber Searcher v4.1 | @hackledin</i>"
     return msg
 
 
 # ══════════════════════════════════════════════════════════════
-#  MÜZİK İNDİRİCİ MODÜLÜ (MP3)
+#  🎵 MÜZİK İNDİRİCİ MODÜLÜ (SAĞLAM / KESİN ÇÖZÜM)
 # ══════════════════════════════════════════════════════════════
 
+MUSIC_LOCK = threading.Lock()
+
+
 def _youtube_ara(sorgu: str) -> Optional[str]:
+    """YouTube'da şarkı arar, ilk video URL'sini döndürür."""
     try:
         q = quote(sorgu)
         html = requests.get(
             f"https://www.youtube.com/results?search_query={q}",
-            headers={"User-Agent": "Mozilla/5.0"},
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"},
             timeout=15,
             verify=False
         ).text
@@ -866,6 +645,12 @@ def _youtube_ara(sorgu: str) -> Optional[str]:
 
 
 def _muzik_indir(sorgu: str) -> dict:
+    """
+    Sağlam müzik indirici.
+    - ffmpeg olmadan da çalışır (m4a/webm/opus doğrudan indirilir)
+    - 50MB üstü reddedilir
+    - Birden fazla format denenir
+    """
     if "youtube.com" in sorgu or "youtu.be" in sorgu:
         url = sorgu
     else:
@@ -876,44 +661,69 @@ def _muzik_indir(sorgu: str) -> dict:
 
     os.makedirs("muzikler", exist_ok=True)
 
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'outtmpl': 'muzikler/%(id)s.%(ext)s',
-        'noplaylist': True,
-        'quiet': True,
-        'no_warnings': True,
-        'max_filesize': 50 * 1024 * 1024,
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
-            'preferredquality': '192',
-        }],
-    }
+    # ffmpeg var mı kontrol et (varsa mp3'e çeviririz)
+    ffmpeg_available = False
+    try:
+        subprocess.run(["ffmpeg", "-version"], stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, timeout=5)
+        ffmpeg_available = True
+    except Exception:
+        ffmpeg_available = False
 
+    if ffmpeg_available:
+        formats = [
+            {'format': 'bestaudio/best', 'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }]},
+        ]
+    else:
+        formats = [
+            {'format': 'bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio[ext=opus]/bestaudio/best'},
+        ]
+
+    last_error = None
     info = None
     dosya_adi = None
 
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=True)
-            dosya_adi = ydl.prepare_filename(info)
+    for opts in formats:
+        try:
+            ydl_opts = {
+                'outtmpl': 'muzikler/%(id)s.%(ext)s',
+                'noplaylist': True,
+                'quiet': True,
+                'no_warnings': True,
+                'max_filesize': 50 * 1024 * 1024,
+                'socket_timeout': 30,
+                'retries': 3,
+                'fragment_retries': 3,
+                'ignoreerrors': False,
+            }
+            ydl_opts.update(opts)
 
-            base, _ = os.path.splitext(dosya_adi)
-            mp3_path = base + ".mp3"
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                dosya_adi = ydl.prepare_filename(info)
 
-            if os.path.exists(mp3_path):
-                dosya_adi = mp3_path
-            else:
-                for ext in [".mp3", ".m4a", ".webm", ".ogg", ".opus"]:
+                # ffmpeg mp3'e çevirdiyse .mp3 uzantısını al
+                base, _ = os.path.splitext(dosya_adi)
+                for ext in [".mp3", ".m4a", ".webm", ".opus", ".ogg"]:
                     if os.path.exists(base + ext):
                         dosya_adi = base + ext
                         break
-    except Exception as e:
-        print(f"[MUSIC DL ERROR] {e}")
-        return {"ok": False, "error": f"❌ İndirme hatası: {str(e)[:100]}"}
+
+            if dosya_adi and os.path.exists(dosya_adi):
+                break
+            else:
+                dosya_adi = None
+        except Exception as e:
+            last_error = str(e)
+            print(f"[MUSIC DL FORMAT ERROR] {e}")
+            continue
 
     if not dosya_adi or not os.path.exists(dosya_adi):
-        return {"ok": False, "error": "❌ İndirme başarısız oldu."}
+        return {"ok": False, "error": f"❌ İndirme başarısız: {last_error or 'bilinmeyen hata'}"}
 
     size = os.path.getsize(dosya_adi)
     if size > 50 * 1024 * 1024:
@@ -922,6 +732,13 @@ def _muzik_indir(sorgu: str) -> dict:
         except:
             pass
         return {"ok": False, "error": f"❌ Dosya çok büyük ({size/(1024*1024):.1f}MB). Limit: 50MB."}
+
+    if size < 1024:
+        try:
+            os.remove(dosya_adi)
+        except:
+            pass
+        return {"ok": False, "error": "❌ İndirilen dosya bozuk (çok küçük)."}
 
     return {
         "ok": True,
@@ -945,7 +762,7 @@ def _process_music(msg, bot_instance):
     if len(parts) < 2:
         bot_instance.reply_to(
             msg,
-            "🎵 **Müzik İndirici (MP3)**\n"
+            "🎵 **Müzik İndirici**\n"
             "━━━━━━━━━━━━━━━━━━━━━\n\n"
             "📌 **Kullanım:**\n"
             "`/sarki Sanatçı Şarkı`\n"
@@ -953,7 +770,7 @@ def _process_music(msg, bot_instance):
             "🎯 **Örnekler:**\n"
             "`/sarki Tarkan Dudu`\n"
             "`/sarki Hadise Feryat`\n\n"
-            "📁 Format: `.mp3` (192 kbps)"
+            "📁 Format: `.mp3` (ffmpeg varsa) / `.m4a`"
         )
         return
 
@@ -962,7 +779,7 @@ def _process_music(msg, bot_instance):
 
     try:
         bot_instance.edit_message_text(
-            f"🎧 **MP3 İndiriliyor...**\n\n`{sorgu}`",
+            f"🎧 **İndiriliyor...**\n\n`{sorgu}`\n\n<i>Bu işlem 30-60 saniye sürebilir.</i>",
             msg.chat.id, durum.message_id
         )
 
@@ -990,12 +807,14 @@ def _process_music(msg, bot_instance):
             except:
                 thumb_path = None
 
+        ext = os.path.splitext(result["path"])[1].replace(".", "") or "m4a"
+
         caption = (
             f"🎵 **{baslik}**\n"
             f"━━━━━━━━━━━━━━━━━━━━━\n"
             f"👤 **Sanatçı:** {sanatci}\n"
             f"⏱ **Süre:** {sure_txt}\n"
-            f"💽 **Format:** `.mp3` (192 kbps)\n"
+            f"💽 **Format:** `.{ext}`\n"
             f"🔗 [YouTube'da Aç]({result['url']})"
         )
 
@@ -1015,6 +834,7 @@ def _process_music(msg, bot_instance):
                 if thumb_file:
                     thumb_file.close()
 
+        # Geçici dosyaları temizle
         try:
             os.remove(result["path"])
         except:
@@ -1030,7 +850,7 @@ def _process_music(msg, bot_instance):
         except:
             pass
 
-        print(f"✅ MP3 GÖNDERİLDİ | {get_user_name(uid)} | {baslik}")
+        print(f"✅ MÜZİK GÖNDERİLDİ | {get_user_name(uid)} | {baslik}")
 
     except Exception as e:
         print(f"[MUSIC ERROR] {e}")
@@ -1041,6 +861,80 @@ def _process_music(msg, bot_instance):
             )
         except:
             bot_instance.reply_to(msg, f"❌ Hata: `{e}`")
+
+
+# ══════════════════════════════════════════════════════════════
+#  🎥 VİDEO İNDİRİCİ (SAĞLAM)
+# ══════════════════════════════════════════════════════════════
+
+def _download_video(link):
+    os.makedirs("downloads", exist_ok=True)
+    out_template = os.path.join("downloads", "%(id)s.%(ext)s")
+    opts = {
+        "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+        "outtmpl": out_template,
+        "noplaylist": True,
+        "quiet": True,
+        "no_warnings": True,
+        "max_filesize": 50 * 1024 * 1024,
+        "socket_timeout": 30,
+        "retries": 3,
+    }
+    try:
+        with YoutubeDL(opts) as ydl:
+            info = ydl.extract_info(link, download=True)
+            if "requested_downloads" in info and info["requested_downloads"]:
+                path = info["requested_downloads"][0]["filepath"]
+            else:
+                path = ydl.prepare_filename(info)
+            if not os.path.exists(path):
+                base, _ = os.path.splitext(path)
+                for ext in [".mp4", ".mkv", ".webm"]:
+                    if os.path.exists(base + ext):
+                        path = base + ext
+                        break
+            if not os.path.exists(path):
+                return {"ok": False, "err": "İndirilen video dosyası bulunamadı."}
+            size = os.path.getsize(path)
+            if size > 50 * 1024 * 1024:
+                os.remove(path)
+                return {"ok": False, "err": f"Video boyutu ({size / (1024*1024):.1f}MB) Telegram'ın 50MB bot limitini aşıyor."}
+            return {
+                "ok": True,
+                "path": path,
+                "title": info.get("title", "Video"),
+                "size": f"{size / (1024 * 1024):.1f}MB",
+                "dur": info.get("duration", "?"),
+                "upl": info.get("uploader", "?")
+            }
+    except Exception as e:
+        return {"ok": False, "err": str(e)}
+
+
+def _process_video(msg, bot_instance):
+    uid = msg.from_user.id
+    link = msg.text.strip()
+    if not link.startswith(("http://", "https://")):
+        bot_instance.reply_to(msg, s(uid, "invalid_link"))
+        return
+    sm = bot_instance.reply_to(msg, s(uid, "video_wait"))
+    res = _download_video(link)
+    if not res["ok"]:
+        bot_instance.edit_message_text(s(uid, "video_err", err=res["err"]), msg.chat.id, sm.message_id)
+        return
+    cap = s(uid, "video_caption", title=res["title"][:60], size=res["size"], dur=res["dur"], upl=res["upl"])
+    try:
+        with open(res["path"], "rb") as f:
+            bot_instance.send_video(msg.chat.id, f, caption=cap, supports_streaming=True, timeout=120)
+    except Exception as e:
+        bot_instance.edit_message_text(f"❌ Gönderme hatası: {e}", msg.chat.id, sm.message_id)
+    finally:
+        if os.path.exists(res["path"]):
+            os.remove(res["path"])
+        try:
+            bot_instance.delete_message(msg.chat.id, sm.message_id)
+        except:
+            pass
 
 
 # ══════════════════════════════════════════════════════════════
@@ -1076,6 +970,8 @@ CAPTURE_NAMES = {
     11: "Supercell", 12: "Epic Games", 13: "Spotify", 14: "Rockstar", 15: "Xbox",
     16: "Microsoft", 17: "Steam", 18: "Roblox", 19: "EA Sports", 20: "Bitkub"
 }
+
+CAPTURE_KEYWORDS = list(CAPTURE_NAMES.values())
 
 CAPTURE_RUNNING = False
 CAPTURE_LOCK = threading.Lock()
@@ -1347,6 +1243,187 @@ def start_capture_scan(combo_list, user_id, user_name, is_premium, target_app=No
 
 
 # ══════════════════════════════════════════════════════════════
+#  LANGUAGE HELPERS
+# ══════════════════════════════════════════════════════════════
+
+def lang(user_id):
+    l = db_get(user_id, "language")
+    return l if l in ("tr", "en", "ar") else "tr"
+
+
+def s(user_id, key, **kw):
+    l = lang(user_id)
+    txt = S.get(l, S["tr"]).get(key, key)
+    return txt.format(**kw) if kw else txt
+
+
+# ══════════════════════════════════════════════════════════════
+#  STRINGS
+# ══════════════════════════════════════════════════════════════
+
+S = {
+    "tr": {
+        "welcome": "🌟 <b>Cyber Searcher</b>\n\nHoşgeldin, <b>{name}</b>!\n📌 Durum: {status}\n\n🔻 Aşağıdan işlem seç:",
+        "free": "🆓 Ücretsiz",
+        "premium": "⭐ PREMIUM",
+        "select_op": "🛠 Kullanmak istediğin aracı seç:",
+        "combo_ask": "🌐 Domain gir (Örn: netflix.com) veya (netflix.com 100):",
+        "searching": "🔍 <b>{domain}</b> taranıyor...",
+        "no_result": "❌ {domain} için sonuç bulunamadı.",
+        "combo_caption": "✅ <b>{domain}</b> | <b>{count}</b> Hesap\nAPI: {apis}",
+        "stats_title": "📊 <b>İSTATİSTİKLERİN</b>",
+        "profile_title": "👤 <b>PROFİL</b>",
+        "lb_title": "🏆 <b>LİDER TABLOSU</b>",
+        "help_title": "📖 <b>YARDIM MENÜSÜ</b>",
+        "no_stats": "📊 Henüz hiç sorgu yapmadınız!",
+        "api_title": "⚙️ <b>API DEĞİŞTİR</b>\n\n📌 Mevcut: <b>{cur}</b>\n\nBir API seç:",
+        "api_set": "✅ API → <b>{api}</b>",
+        "lang_pick": "🌍 Dil seçin / Select language / اختر لغتك",
+        "lang_ok": "✅ Dil seçildi!",
+        "premium_title": "⭐ <b>PREMIUM ÜYELİK</b>",
+        "premium_price_txt": "💰 Fiyat: <b>{price} Telegram Yıldızı</b>",
+        "premium_dur": "♾️ Süre: <b>Sınırsız (Ömür Boyu)</b>",
+        "premium_features": "🎯 <b>PREMIUM ÖZELLİKLER</b>\n   • 📧 Sınırsız Hotmail Check\n   • 📸 Sınırsız Capture (20 Platform)\n   • 🔖 Sınırsız Keyword\n   • 🌍 Sınırsız OSINT (LeakSights)\n   • 📊 Detaylı istatistikler",
+        "osint_price": "💰 OSINT Premium: 200 Yıldız",
+        "already_premium": "⭐ Zaten Premium üyesiniz!",
+        "prem_ok": "🎉 <b>Premium aktif!</b>",
+        "buy_premium_btn": "⭐ Premium Satın Al (400⭐)",
+        "buy_osint_btn": "🌍 OSINT Premium Satın Al (200⭐)",
+        "back_btn": "◀️ Geri",
+        "home_btn": "🏠 Ana Menü",
+        "tools_btn": "🛠 Araçlar",
+        "premium_req": "🔒 Premium gerekli!",
+        "video_ask": "🎥 Video linkini gönder:",
+        "video_wait": "⏳ İndiriliyor...",
+        "video_err": "❌ İndirilemedi:\n<code>{err}</code>",
+        "video_caption": "🎥 <b>{title}</b>\n📦 {size}  ⏱ {dur}s  👤 {upl}",
+        "invalid_link": "❌ Geçerli bir link gir!",
+        "ls_ask": "{icon} <b>LeakSights — {tool}</b>\n\n📥 Sorgu değerini gir:",
+        "ls_caption": "📋 LeakSights ⭐\n🔍 Aranan: <code>{val}</code>\n📅 {date}",
+        "tr_ask": "{prompt}\n\n📌 Sonuç TXT olarak gelir.",
+        "tr_caption": "📋 {tool} Sorgu\n🔍 Param: <code>{param}</code>\n📅 {date}",
+        "processing": "🔄 Sorgulanıyor...",
+        "admin_only": "❌ Bu komut sadece admin içindir!",
+        "no_data": "❌ Veri alınamadı.",
+        "given_ok": "✅ Premium verildi: @{user}",
+        "removed_ok": "✅ Premium kaldırıldı: @{user}",
+        "user_nf": "❌ Kullanıcı bulunamadı!",
+        "enter_val": "Değeri gir:",
+        "invalid_tc": "❌ Geçersiz TC (11 haneli sayı olmalı)!",
+        "invalid_gsm": "❌ Geçersiz GSM (10 haneli)!",
+        "invalid_adsoyad": "❌ Ad ve Soyad gir!",
+        "invalid_adaparsel": "❌ İl,İlçe formatında gir!",
+        "multi_bot_list": "🤖 <b>BOT LİSTESİ</b>",
+        "multi_bot_running": "🟢 Çalışıyor",
+        "multi_bot_stopped": "🔴 Durduruldu",
+        "multi_bot_total": "📊 Toplam: {count} bot",
+        "multi_bot_added": "✅ Bot başlatıldı!\n\n🔑 Token: `{token}`\n👤 Sahip: {owner}\n📌 Durum: 🟢 Çalışıyor",
+        "multi_bot_removed": "✅ Bot durduruldu!\n\n🔑 Token: `{token}`",
+        "multi_bot_not_found": "❌ Token `{token}` bulunamadı!",
+        "multi_bot_exists": "⚠️ Bu token zaten çalışıyor!",
+        "multi_bot_no_bots": "📭 Hiç bot kaydı bulunamadı.",
+        "multi_bot_add_usage": "❌ Kullanım: /addbot BOT_TOKEN\n\nÖrnek: /addbot 8369544888:ABC123...",
+        "addbot_tool": "🤖 Bot Ekle",
+        "announce_title": "📢 <b>ADMIN DUYURU</b>",
+        "announce_sent": "✅ Duyuru gönderildi!",
+        "announce_usage": "❌ Kullanım: /duyuru MESAJ",
+        "announce_no_users": "❌ Gönderilecek kullanıcı bulunamadı.",
+        "announce_failed": "❌ Duyuru gönderilirken hata oluştu.",
+        "php2py": "🐍 PHP'den Python'a Çevirici\n\nBana bir PHP dosyası gönder, Python'a çevireyim.",
+        "php2py_converting": "🔄 Çeviriliyor...",
+        "php2py_done": "✅ Tamamlandı!",
+        "php2py_error": "❌ Çeviri sırasında hata oluştu:\n{err}",
+        "php2py_only": "❌ Sadece PHP dosyası gönder!",
+        "php2py_no_token": "❌ API token alınamadı.",
+        "help_content": (
+            "📖 **YARDIM MENÜSÜ**\n"
+            f"📌 Durumunuz: {status}\n"
+            "══════════════════════\n\n"
+            "🔹 **SORGU SİSTEMLERİ** (🆓 ÜCRETSİZ):\n"
+            "   • 🆔 TC Sorgu\n"
+            "   • 🔍 TC Pro Sorgu\n"
+            "   • 👤 Ad Soyad Sorgu\n"
+            "   • 👨‍👩‍👧 Aile Sorgu\n"
+            "   • 👨‍👩‍👧‍👦 Aile Pro Sorgu\n"
+            "   • 🌳 Sülale Sorgu\n"
+            "   • 📱 TC'den GSM\n"
+            "   • 📞 GSM'den TC\n"
+            "   • 🚗 Plaka Sorgu\n"
+            "   • 🎓 E-Okul Sorgu\n"
+            "   • 🏠 Tapu Sorgu\n"
+            "   • 🗺️ Ada Parsel Sorgu\n"
+            "   • 🏠 Adres Sorgu (YENİ!) ✅\n\n"
+            "🔹 **⭐ PREMIUM PAKETLER:**\n"
+            "   • 🌟 Premium (400 Yıldız) → Sınırsız Hotmail + Capture + Keyword\n"
+            "   • 🌍 OSINT Premium (200 Yıldız) → LeakSights OSINT (30+ Sorgu)\n"
+            "   • /premium ile satın alabilirsin\n\n"
+            "🔹 **DİĞER ARAÇLAR** (🆓 ÜCRETSİZ):\n"
+            "   • 📦 Combo Çekme\n"
+            "   • 🎥 Video İndirme (Sağlam ✅)\n"
+            "   • 🎵 Müzik İndirme (Sağlam ✅)\n"
+            "   • 💳 CC Generator\n"
+            "   • 🤖 Discord Token Kontrol\n"
+            "   • ✈️ Telegram Token Kontrol\n"
+            "   • 🌐 IP Bilgi\n"
+            "   • 🔎 DNS Sorgu\n"
+            "   • ⚽ Bahis Sorgu\n"
+            "   • 💊 Eczane Sorgu\n"
+            "   • 🛡️ Proxy Check\n"
+            "   • 🔍 URL Scan\n"
+            "   • 🐍 PHP→Python Çevirici\n"
+            "   • 💣 SMS Bomber - 41+ Servis ✅\n"
+            "   • 📧 Hotmail Checker - Free 3000 satır\n"
+            "   • 📸 Capture Tool - Free 3 kullanım\n"
+            "   • 📸 EXIF Metadata Analizi ✅\n"
+            "🔹 **PROFİL:**\n"
+            "   • 👤 Profil\n"
+            "   • 📊 İstatistik\n"
+            "   • 🏆 Lider Tablosu\n"
+            "   • ⚙️ API Değiştir\n\n"
+            "👨‍💻 coded by: @hackledin"
+        ),
+    },
+    "en": {
+        "welcome": "🌟 <b>Cyber Searcher</b>\n\nWelcome, <b>{name}</b>!\n📌 Status: {status}\n\n🔻 Select an option:",
+        "free": "🆓 Free",
+        "premium": "⭐ PREMIUM",
+        "osint_price": "💰 OSINT Premium: 200 Stars",
+        "help_content": (
+            "📖 **HELP MENU**\n"
+            f"📌 Your Status: {status}\n"
+            "══════════════════════\n\n"
+            "🔹 **⭐ PREMIUM PACKAGES:**\n"
+            "   • 🌟 Premium (400 Stars) → Unlimited Hotmail + Capture + Keyword\n"
+            "   • 🌍 OSINT Premium (200 Stars) → LeakSights OSINT (30+ Queries)\n\n"
+            "🔹 **OTHER TOOLS:**\n"
+            "   • 💣 SMS Bomber - 41+ Services ✅\n"
+            "   • 📧 Hotmail Checker - Free 3000 lines\n"
+            "   • 📸 Capture Tool - Free 3 uses\n"
+            "   • 📸 EXIF Metadata Analysis ✅\n"
+            "   • 🎵 Music Downloader (Fixed ✅)\n"
+            "   • 🎥 Video Downloader (Fixed ✅)\n"
+            "   • 🌍 LeakSights OSINT - Premium (200⭐)\n\n"
+            "👨‍💻 coded by: @hackledin"
+        ),
+    },
+    "ar": {
+        "welcome": "🌟 <b>Cyber Searcher</b>\n\nمرحباً، <b>{name}</b>!\n📌 الحالة: {status}\n\n🔻 اختر خياراً:",
+        "free": "🆓 مجاني",
+        "premium": "⭐ بريميوم",
+        "osint_price": "💰 OSINT بريميوم: 200 نجمة",
+        "help_content": (
+            "📖 **قائمة المساعدة**\n"
+            f"📌 حالتك: {status}\n"
+            "══════════════════════\n\n"
+            "🔹 **⭐ باقات البريميوم:**\n"
+            "   • 🌟 بريميوم (400 نجمة) → غير محدود Hotmail + Capture + Keyword\n"
+            "   • 🌍 OSINT بريميوم (200 نجمة) → LeakSights OSINT (30+ استعلام)\n\n"
+            "👨‍💻 coded by: @hackledin"
+        ),
+    },
+}
+
+# ══════════════════════════════════════════════════════════════
 #  KEYBOARDS
 # ══════════════════════════════════════════════════════════════
 
@@ -1429,6 +1506,8 @@ TURKIYE_API = {
     "eokul": {"url": "https://ajaxsystems.fun/eokul.php?tc={tc}", "icon": "🎓", "tr": "E-Okul Sorgu", "en": "E-School Query", "ar": "استعلام المدرسة", "params": ["tc"]},
     "tapu": {"url": "https://ajaxsystems.fun/tapu.php?tc={tc}", "icon": "🏠", "tr": "Tapu Sorgu", "en": "Title Deed Query", "ar": "استعلام الملكية", "params": ["tc"]},
     "adaparsel": {"url": "https://ajaxsystems.fun/adaparsel.php?il={il}&ilce={ilce}", "icon": "🗺️", "tr": "Ada Parsel", "en": "Block Parcel", "ar": "استعلام القطعة", "params": ["il", "ilce"]},
+    # ── YENİ EKLENEN ADRES SORGU ──
+    "adres": {"url": "https://apiv2.ajaxsystems.fun/adres.php?tc={tc}", "icon": "🏠", "tr": "Adres Sorgu (Tapu & Adres)", "en": "Address Query (Title & Address)", "ar": "استعلام العنوان", "params": ["tc"]},
 }
 
 LS_TOKEN = "NHLpkXyN8Lq3AkkjA5yECyMu5lpA0l0GqnY0Co8kBwh9eIeOJg"
@@ -1569,6 +1648,7 @@ TURKEY_PROMPTS = {
         "eokul": "🎓 TC Kimlik Numarası girin (11 haneli):",
         "tapu": "🏠 TC Kimlik Numarası girin (11 haneli):",
         "adaparsel": "🗺️ İl,İlçe girin (Örn: İSTANBUL,KADIKÖY):",
+        "adres": "🏠 Adres Sorgu (Tapu & Adres)\n\nTC Kimlik Numarası girin (11 haneli):",
     },
     "en": {
         "tc": "🆔 Enter TC ID number (11 digits):",
@@ -1582,6 +1662,7 @@ TURKEY_PROMPTS = {
         "eokul": "🎓 Enter TC ID number (11 digits):",
         "tapu": "🏠 Enter TC ID number (11 digits):",
         "adaparsel": "🗺️ Enter Province,District (e.g., ISTANBUL,KADIKOY):",
+        "adres": "🏠 Address Query\n\nEnter TC ID number (11 digits):",
     },
     "ar": {
         "tc": "🆔 أدخل رقم الهوية (11 رقم):",
@@ -1595,6 +1676,7 @@ TURKEY_PROMPTS = {
         "eokul": "🎓 أدخل رقم الهوية (11 رقم):",
         "tapu": "🏠 أدخل رقم الهوية (11 رقم):",
         "adaparsel": "🗺️ أدخل المحافظة,المنطقة:",
+        "adres": "🏠 استعلام العنوان\n\nأدخل رقم الهوية (11 رقم):",
     },
 }
 
@@ -1615,7 +1697,7 @@ def tools_kb(user_id):
         _btn("🔎 DNS Sorgu", "tool_dns"), _btn("⚽ Bahis Sorgu", "tool_bahis"),
         _btn("🚗 Plaka Sorgu", "tool_plaka"), _btn("💎 PreDunyam", "tool_predunyam"),
         _btn("🛡️ Proxy Check", "tool_proxycheck"), _btn("🔍 URL Scan", "tool_urlscan"),
-        _btn("🎥 Video İndir", "tool_video"), _btn("🎵 Müzik İndir (MP3)", "tool_music"),
+        _btn("🎥 Video İndir", "tool_video"), _btn("🎵 Müzik İndir", "tool_music"),
         _btn("🤖 Bot Ekle", "tool_addbot"), _btn("🐍 PHP→Python", "tool_php2py"),
         _btn("💣 SMS Bomber", "tool_smsbomb"), _btn("📧 Hotmail Checker", "tool_hotmail"),
         _btn("📸 EXIF Metadata", "tool_exif"),
@@ -1645,6 +1727,8 @@ def turkey_kb(user_id):
     mk.add(_btn(f"{TURKIYE_API['tapu']['icon']} {lbl('tapu')}", "tr_tapu"),
            _btn(f"{TURKIYE_API['eokul']['icon']} {lbl('eokul')}", "tr_eokul"))
     mk.add(_btn(f"{TURKIYE_API['adaparsel']['icon']} {lbl('adaparsel')}", "tr_adaparsel"))
+    # ── YENİ: ADRES SORGU BUTONU ──
+    mk.add(_btn(f"{TURKIYE_API['adres']['icon']} {lbl('adres')}", "tr_adres"))
     mk.add(_btn(s(user_id, "tools_btn"), "goto_tools"), _btn(s(user_id, "home_btn"), "goto_home"))
     return mk
 
@@ -1712,7 +1796,7 @@ def _spawn_bot(token: str, owner_id: int = None) -> bool:
     if token == BOT_TOKEN:
         print(f"[SPAWN] ⚠️ Ana bot token'ı spawn edilemez!")
         return False
-
+    
     with _PROC_LOCK:
         if token in _CHILD_PROCS:
             proc = _CHILD_PROCS[token]
@@ -1741,16 +1825,16 @@ def start_saved_bots():
     registry = _load_registry()
     if not registry:
         return
-
+    
     if BOT_TOKEN in registry:
         print(f"[MAIN] ⚠️ Ana bot token'ı registry'de bulundu, atlanıyor...")
         del registry[BOT_TOKEN]
         _save_registry(registry)
-
+    
     if not registry:
         print("[MAIN] Başlatılacak kayıtlı bot yok.")
         return
-
+    
     print(f"[MAIN] Starting {len(registry)} saved bots...")
     for token, info in registry.items():
         owner_id = info.get("owner_id")
@@ -2250,9 +2334,16 @@ class SendSms:
     def Kigili(self):
         try:
             url = "https://www.kigili.com/users/registration/"
-            data = {"first_name": "Memati", "last_name": "Bas", "email": self.mail,
-                    "phone": "0" + self.phone, "password": "nwejkfıower32",
-                    "confirm": "true", "kvkk": "true", "next": ""}
+            data = {
+                "first_name": "Memati",
+                "last_name": "Bas",
+                "email": self.mail,
+                "phone": "0" + self.phone,
+                "password": "nwejkfıower32",
+                "confirm": "true",
+                "kvkk": "true",
+                "next": ""
+            }
             r = requests.post(url, data=data, headers={"User-Agent": "Mozilla/5.0"}, timeout=6)
             if r.status_code == 202:
                 self.adet += 1
@@ -3709,6 +3800,7 @@ def register_handlers(bot_instance):
             bot_instance.reply_to(
                 msg,
                 f"🚫 **YASAKLANDINIZ!**\n\n"
+                f"❌ Bu botu kullanmanız yasaklanmıştır.\n"
                 f"📌 Sebep: {get_ban_reason(uid)}\n\n"
                 f"📞 İtiraz için: @hackledin"
             )
@@ -3822,7 +3914,8 @@ def register_handlers(bot_instance):
             "• 🎯 ISO, diyafram, obtüratör, odak\n"
             "• ⚡ Flaş durumu ve lens bilgisi\n"
             "• 📍 GPS koordinatları (varsa)\n"
-            "• 🗺 Google Maps linki (varsa)\n\n"
+            "• 🗺 Google Maps linki (varsa)\n"
+            "• ⛰ Rakım ve GPS zamanı\n\n"
             "<i>⚠️ Sosyal medyadan indirilmiş fotoğraflarda "
             "EXIF silinmiş olabilir.</i>",
             parse_mode="HTML"
@@ -4233,6 +4326,15 @@ def register_handlers(bot_instance):
                     "📸 <b>EXIF Metadata Okuyucu</b>\n"
                     f"{'━' * 28}\n\n"
                     "Analiz etmek istediğin fotoğrafı gönder.\n\n"
+                    "📋 <b>Okunacak Bilgiler:</b>\n"
+                    "• 📱 Cihaz markası ve modeli\n"
+                    "• 📅 Çekim tarihi ve saati\n"
+                    "• 📐 Çözünürlük ve teknik parametreler\n"
+                    "• 🎯 ISO, diyafram, obtüratör, odak\n"
+                    "• ⚡ Flaş durumu ve lens bilgisi\n"
+                    "• 📍 GPS koordinatları (varsa)\n"
+                    "• 🗺 Google Maps linki (varsa)\n"
+                    "• ⛰ Rakım ve GPS zamanı\n\n"
                     "<i>⚠️ Sosyal medyadan indirilmiş fotoğraflarda "
                     "EXIF silinmiş olabilir.</i>",
                     parse_mode="HTML"
@@ -4246,7 +4348,7 @@ def register_handlers(bot_instance):
                     pass
                 bot_instance.send_message(
                     call.message.chat.id,
-                    "🎵 **Müzik İndirici (MP3)**\n"
+                    "🎵 **Müzik İndirici**\n"
                     "━━━━━━━━━━━━━━━━━━━━━\n\n"
                     "📌 **Kullanım:**\n"
                     "`/sarki Sanatçı Şarkı`\n"
@@ -4254,7 +4356,7 @@ def register_handlers(bot_instance):
                     "🎯 **Örnekler:**\n"
                     "`/sarki Tarkan Dudu`\n"
                     "`/sarki Hadise Feryat`\n\n"
-                    "📁 Format: `.mp3` (192 kbps)"
+                    "📁 Format: `.mp3` (ffmpeg varsa) / `.m4a`"
                 )
                 return
 
@@ -5026,7 +5128,8 @@ def _show_api_menu(chat_id, uid, bot_instance, edit=None):
 
 
 def _show_help(chat_id, uid, bot_instance):
-    txt = get_help_content(uid)
+    status = "⭐ PREMIUM" if is_premium(uid) else "🆓 Ücretsiz"
+    txt = s(uid, "help_content", status=status)
     bot_instance.send_message(chat_id, txt)
 
 
@@ -5108,7 +5211,7 @@ def _process_turkey(msg, tool, bot_instance):
     uid = msg.from_user.id
     param = msg.text.strip()
     l = lang(uid)
-    if tool in ("tc", "tcpro", "aile", "ailepro", "sulale", "tcgsm", "eokul", "tapu"):
+    if tool in ("tc", "tcpro", "aile", "ailepro", "sulale", "tcgsm", "eokul", "tapu", "adres"):
         if not (param.isdigit() and len(param) == 11):
             bot_instance.reply_to(msg, s(uid, "invalid_tc"))
             return
@@ -5230,74 +5333,6 @@ def _send_txt_result(chat_id, status_mid, bot_instance, fname, content, caption)
     except Exception as e:
         try:
             bot_instance.edit_message_text(f"❌ {e}", chat_id, status_mid)
-        except:
-            pass
-
-
-def _download_video(link):
-    os.makedirs("downloads", exist_ok=True)
-    out_template = os.path.join("downloads", "%(id)s.%(ext)s")
-    opts = {
-        "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
-        "outtmpl": out_template,
-        "noplaylist": True,
-        "quiet": True,
-        "no_warnings": True,
-        "max_filesize": 50 * 1024 * 1024,
-    }
-    try:
-        with YoutubeDL(opts) as ydl:
-            info = ydl.extract_info(link, download=True)
-            if "requested_downloads" in info and info["requested_downloads"]:
-                path = info["requested_downloads"][0]["filepath"]
-            else:
-                path = ydl.prepare_filename(info)
-            if not os.path.exists(path):
-                base, _ = os.path.splitext(path)
-                for ext in [".mp4", ".mkv", ".webm"]:
-                    if os.path.exists(base + ext):
-                        path = base + ext
-                        break
-            if not os.path.exists(path):
-                return {"ok": False, "err": "İndirilen video dosyası bulunamadı."}
-            size = os.path.getsize(path)
-            if size > 50 * 1024 * 1024:
-                os.remove(path)
-                return {"ok": False, "err": f"Video boyutu ({size / (1024*1024):.1f}MB) Telegram'ın 50MB bot limitini aşıyor."}
-            return {
-                "ok": True,
-                "path": path,
-                "title": info.get("title", "Video"),
-                "size": f"{size / (1024 * 1024):.1f}MB",
-                "dur": info.get("duration", "?"),
-                "upl": info.get("uploader", "?")
-            }
-    except Exception as e:
-        return {"ok": False, "err": str(e)}
-
-
-def _process_video(msg, bot_instance):
-    uid = msg.from_user.id
-    link = msg.text.strip()
-    if not link.startswith(("http://", "https://")):
-        bot_instance.reply_to(msg, s(uid, "invalid_link"))
-        return
-    sm = bot_instance.reply_to(msg, s(uid, "video_wait"))
-    res = _download_video(link)
-    if not res["ok"]:
-        bot_instance.edit_message_text(s(uid, "video_err", err=res["err"]), msg.chat.id, sm.message_id)
-        return
-    cap = s(uid, "video_caption", title=res["title"][:60], size=res["size"], dur=res["dur"], upl=res["upl"])
-    try:
-        with open(res["path"], "rb") as f:
-            bot_instance.send_video(msg.chat.id, f, caption=cap, supports_streaming=True, timeout=120)
-    except Exception as e:
-        bot_instance.edit_message_text(f"❌ Gönderme hatası: {e}", msg.chat.id, sm.message_id)
-    finally:
-        if os.path.exists(res["path"]):
-            os.remove(res["path"])
-        try:
-            bot_instance.delete_message(msg.chat.id, sm.message_id)
         except:
             pass
 
@@ -5769,7 +5804,7 @@ if __name__ == "__main__":
 
     print("""
 ╔══════════════════════════════════════════════════════╗
-║       CYBER SEARCHER v4.0 — PRODUCTION               ║
+║       CYBER SEARCHER v4.1 — PRODUCTION               ║
 ║         Developer: @hackledin                        ║
 ╠══════════════════════════════════════════════════════╣
 ║  ✅ Premium (400 Yıldız) - Sınırsız                  ║
@@ -5779,8 +5814,9 @@ if __name__ == "__main__":
 ║  ✅ Hotmail v4.0 (OAuth2, Proxy, 2FA, Captcha)       ║
 ║  ✅ Capture Tool (Free 3 / Premium Sınırsız)         ║
 ║  ✅ EXIF Metadata Analizi                            ║
-║  ✅ Müzik İndirici (MP3 - 192 kbps)                  ║
-║  ✅ Video İndirici                                   ║
+║  ✅ Müzik İndirici (SAĞLAM ✅)                       ║
+║  ✅ Video İndirici (SAĞLAM ✅)                       ║
+║  ✅ Adres Sorgu (YENİ! ✅)                           ║
 ║  ✅ Türkçe / English / العربية                        ║
 ║  ✅ Auto-restart on crash                            ║
 ╚══════════════════════════════════════════════════════╝
