@@ -256,7 +256,7 @@ def can_add_keyword(user_id):
 
 def get_keyword_limit_text(user_id):
     if is_premium(user_id):
-        return f"♾️ Sınırsız"
+        return "♾️ Sınırsız"
     return f"{FREE_KEYWORD_LIMIT}"
 
 def get_capture_used(user_id):
@@ -276,7 +276,7 @@ def can_use_capture(user_id):
 
 def get_capture_limit_text(user_id):
     if is_premium(user_id):
-        return f"♾️ Sınırsız"
+        return "♾️ Sınırsız"
     return f"{FREE_CAPTURE_LIMIT - get_capture_used(user_id)}"
 
 def get_daily_usage(user_id):
@@ -645,12 +645,6 @@ def _youtube_ara(sorgu: str) -> Optional[str]:
 
 
 def _muzik_indir(sorgu: str) -> dict:
-    """
-    Sağlam müzik indirici.
-    - ffmpeg olmadan da çalışır (m4a/webm/opus doğrudan indirilir)
-    - 50MB üstü reddedilir
-    - Birden fazla format denenir
-    """
     if "youtube.com" in sorgu or "youtu.be" in sorgu:
         url = sorgu
     else:
@@ -661,7 +655,6 @@ def _muzik_indir(sorgu: str) -> dict:
 
     os.makedirs("muzikler", exist_ok=True)
 
-    # ffmpeg var mı kontrol et (varsa mp3'e çeviririz)
     ffmpeg_available = False
     try:
         subprocess.run(["ffmpeg", "-version"], stdout=subprocess.DEVNULL,
@@ -706,7 +699,6 @@ def _muzik_indir(sorgu: str) -> dict:
                 info = ydl.extract_info(url, download=True)
                 dosya_adi = ydl.prepare_filename(info)
 
-                # ffmpeg mp3'e çevirdiyse .mp3 uzantısını al
                 base, _ = os.path.splitext(dosya_adi)
                 for ext in [".mp3", ".m4a", ".webm", ".opus", ".ogg"]:
                     if os.path.exists(base + ext):
@@ -834,7 +826,6 @@ def _process_music(msg, bot_instance):
                 if thumb_file:
                     thumb_file.close()
 
-        # Geçici dosyaları temizle
         try:
             os.remove(result["path"])
         except:
@@ -1258,7 +1249,7 @@ def s(user_id, key, **kw):
 
 
 # ══════════════════════════════════════════════════════════════
-#  STRINGS
+#  STRINGS  (⚠️ BURADA f-STRING KULLANILMAMALI!)
 # ══════════════════════════════════════════════════════════════
 
 S = {
@@ -1337,7 +1328,7 @@ S = {
         "php2py_no_token": "❌ API token alınamadı.",
         "help_content": (
             "📖 **YARDIM MENÜSÜ**\n"
-            f"📌 Durumunuz: {status}\n"
+            "📌 Durumunuz: {status}\n"
             "══════════════════════\n\n"
             "🔹 **SORGU SİSTEMLERİ** (🆓 ÜCRETSİZ):\n"
             "   • 🆔 TC Sorgu\n"
@@ -1390,7 +1381,7 @@ S = {
         "osint_price": "💰 OSINT Premium: 200 Stars",
         "help_content": (
             "📖 **HELP MENU**\n"
-            f"📌 Your Status: {status}\n"
+            "📌 Your Status: {status}\n"
             "══════════════════════\n\n"
             "🔹 **⭐ PREMIUM PACKAGES:**\n"
             "   • 🌟 Premium (400 Stars) → Unlimited Hotmail + Capture + Keyword\n"
@@ -1413,7 +1404,7 @@ S = {
         "osint_price": "💰 OSINT بريميوم: 200 نجمة",
         "help_content": (
             "📖 **قائمة المساعدة**\n"
-            f"📌 حالتك: {status}\n"
+            "📌 حالتك: {status}\n"
             "══════════════════════\n\n"
             "🔹 **⭐ باقات البريميوم:**\n"
             "   • 🌟 بريميوم (400 نجمة) → غير محدود Hotmail + Capture + Keyword\n"
@@ -1506,7 +1497,6 @@ TURKIYE_API = {
     "eokul": {"url": "https://ajaxsystems.fun/eokul.php?tc={tc}", "icon": "🎓", "tr": "E-Okul Sorgu", "en": "E-School Query", "ar": "استعلام المدرسة", "params": ["tc"]},
     "tapu": {"url": "https://ajaxsystems.fun/tapu.php?tc={tc}", "icon": "🏠", "tr": "Tapu Sorgu", "en": "Title Deed Query", "ar": "استعلام الملكية", "params": ["tc"]},
     "adaparsel": {"url": "https://ajaxsystems.fun/adaparsel.php?il={il}&ilce={ilce}", "icon": "🗺️", "tr": "Ada Parsel", "en": "Block Parcel", "ar": "استعلام القطعة", "params": ["il", "ilce"]},
-    # ── YENİ EKLENEN ADRES SORGU ──
     "adres": {"url": "https://apiv2.ajaxsystems.fun/adres.php?tc={tc}", "icon": "🏠", "tr": "Adres Sorgu (Tapu & Adres)", "en": "Address Query (Title & Address)", "ar": "استعلام العنوان", "params": ["tc"]},
 }
 
@@ -1727,7 +1717,6 @@ def turkey_kb(user_id):
     mk.add(_btn(f"{TURKIYE_API['tapu']['icon']} {lbl('tapu')}", "tr_tapu"),
            _btn(f"{TURKIYE_API['eokul']['icon']} {lbl('eokul')}", "tr_eokul"))
     mk.add(_btn(f"{TURKIYE_API['adaparsel']['icon']} {lbl('adaparsel')}", "tr_adaparsel"))
-    # ── YENİ: ADRES SORGU BUTONU ──
     mk.add(_btn(f"{TURKIYE_API['adres']['icon']} {lbl('adres')}", "tr_adres"))
     mk.add(_btn(s(user_id, "tools_btn"), "goto_tools"), _btn(s(user_id, "home_btn"), "goto_home"))
     return mk
