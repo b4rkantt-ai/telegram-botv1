@@ -43,7 +43,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 ══════════════════════════════════════════════════════════════
 CONFIGURATION
 ══════════════════════════════════════════════════════════════
-BOT_TOKEN     = "7885601619:AAFiz7kr-TCCuLK6N0gChRBerlJW71oH4og"
+BOT_TOKEN     = "7885601619:AAG2mY41XOx6fGwK8tw4Co-RKrC1WIZnkws"
 ADMIN_ID      = 8573809926
 DB_PATH       = "cyber_searcher.db"
 BOT_REGISTRY_FILE = "bot_registry.json"
