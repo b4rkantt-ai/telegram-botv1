@@ -1,9 +1,9 @@
 # -- coding: utf-8 --
-╔════════════════════════════════════════════════════════════════╗
-║   ✨ CYBER SEARCHER v4.2 — FULL PRODUCTION (PREMIUM UI) ✨    ║
-║              Developer: @hackledin                             ║
-║   🎵 Müzik + 🎥 Video (POT ile Bot Koruması Aşıldı)           ║
-╚════════════════════════════════════════════════════════════════╝
+# ╔════════════════════════════════════════════════════════════════╗
+# ║         CYBER SEARCHER v4.2 — FULL PRODUCTION                  ║
+# ║              Developer: @hackledin                             ║
+# ║  🎵 Müzik + 🎥 Video (POT ile Bot Koruması Aşıldı)            ║
+# ╚════════════════════════════════════════════════════════════════╝
 import telebot
 import requests
 import os
